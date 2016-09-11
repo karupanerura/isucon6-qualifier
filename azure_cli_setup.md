@@ -30,6 +30,7 @@ azure config mode arm
 
 ### deploy from template
 CLIでやるよりポチポチするほうが楽そう
+
 参考: https://azure.microsoft.com/ja-jp/documentation/articles/virtual-machines-linux-cli-deploy-templates/
 ![https://gyazo.com/a6e4bbae3f213b3c221f04e36a7e7d85]()
 
@@ -54,3 +55,16 @@ ssh isucon@13.78.91.251
 # あとはよしなに
 ```
 
+### stop VM
+
+```
+# 一時停止したい場合（課金は継続されます！）
+azure vm stop isucon5-qualifier-00 image
+> warn: VM shutdown will not release the compute resources so you will be billed for the compute resources that this Virtual Machine uses.
+って出てたけど見逃してた
+
+# 課金を停止したい場合
+azure vm deallocate isucon5-qualifier-00 image
+```
+
+ストレージの課金が継続されるのかは確認中。コンテナーとやらを削除してあげないと課金され続けそうな？

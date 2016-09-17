@@ -38,8 +38,8 @@ alp -f /tmp/nginx.access.log --aggregates "/diary/entry/\d+"
 ## ログのローテート
 
 ```bash
-sudo -H ./logrotate.pl nginx /var/log/nginx/access.log
-sudo -H ./logrotate.pl mysql /tmp/mysql-slow.log
+sudo -H logrotate.pl nginx /var/log/nginx/access.log
+sudo -H logrotate.pl mysql /tmp/mysql-slow.log
 ```
 
 ## コンフィグテスト

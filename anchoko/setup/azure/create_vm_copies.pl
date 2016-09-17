@@ -4,9 +4,7 @@ use warnings;
 use feature qw/say/;
 use JSON::PP qw/decode_json encode_json/;
 
-my @COPY_NAMES = ('app', 'infra');
-my $commands = {
-};
+my @COPY_NAMES = ('app', 'infra', 'target');
 my $command_prefix = 'azure';
 my $command_postfix = '--json';
 my $dry_run = 0;

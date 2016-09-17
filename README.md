@@ -4,6 +4,14 @@
 ## ポータルサイト
 TBD
 
+## SSH configを生成
+
+USERはよしなに。
+
+```bash
+USER=$USER ./tools/make-ssh-config.pl
+```
+
 ## 便利情報リンク集
 
 ### Azure関連エントリ（登録完了メールから転記）

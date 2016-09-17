@@ -1,7 +1,7 @@
 ---
 
-- name: set timezone to Asia/Tokyo
-  timezone: name=Asia/Tokyo
+# - name: set timezone to Asia/Tokyo
+#   timezone: name=Asia/Tokyo
 - name: install common packages
   apt: name={{ item }} update_cache=yes cache_valid_time=3600
   with_items:

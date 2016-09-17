@@ -21,3 +21,5 @@
       tags: supervisor
     - include: tasks/09_memcached.yaml
       tags: memcached
+    - include: tasks/10_mackerel.yaml
+      tags: mackerel

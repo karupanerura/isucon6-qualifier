@@ -44,7 +44,6 @@
     - mysql-server
     - mysql-common
     - mysql-client
-    - mackerel-agent
 - name: download and install lltsv
   get_url: url=https://github.com/sonots/lltsv/releases/download/0.5.1/lltsv_linux_amd64 dest=/usr/bin/lltsv mode=0755
 - name: download alp

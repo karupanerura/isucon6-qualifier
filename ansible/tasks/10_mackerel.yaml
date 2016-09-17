@@ -1,0 +1,12 @@
+---
+
+- name: install packages (mackerel)
+  apt: name={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - mackerel-agent
+    - mackerel-agent-plugins
+    - mackerel-check-plugins
+- name: render config
+  template: src=mackerel-agent.conf.j2 dest=/etc/mackerel-agent/mackerel-agent.conf owner=root group=wheel mode=0644 validate='mackerel-agent configtest -conf %s'
+- name: reload mackerel-agent
+  service: name=mackerel-agent state=restarted

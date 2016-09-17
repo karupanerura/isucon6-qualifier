@@ -2,8 +2,7 @@
 use strict;
 use warnings;
 use feature qw/say/;
-use JSON qw/decode_json encode_json/;
-use DDP;
+use JSON::PP qw/decode_json encode_json/;
 
 my @COPY_NAMES = ('app', 'infra');
 my $commands = {
@@ -12,8 +11,7 @@ my $command_prefix = 'azure';
 my $command_postfix = '--json';
 my $dry_run = 0;
 
-main->(@ARGV);
-
+main(@ARGV);
 
 sub main {
     my ($resource_group, $src_name, $needs_dry_run) = @_;

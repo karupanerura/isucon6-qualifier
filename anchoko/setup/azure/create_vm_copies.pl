@@ -14,7 +14,7 @@ my $dry_run = 0;
 main(@ARGV);
 
 sub main {
-    my ($resource_group, $src_name, $needs_dry_run) = @_;
+    my ($resource_group, $vnet_name, $src_name, $needs_dry_run) = @_;
     if ($needs_dry_run) {
         $dry_run = 1;
     }
@@ -31,7 +31,7 @@ sub main {
     for my $name (@COPY_NAMES) {
         my $container_name = "oniyanma-${name}-container";
         copy_image($container_name, $src_url);
-        create_networks($resource_group, $name);
+        create_networks($resource_group, $vnet_name, $name);
 
         my $vhd_url = "https://${storage_account}.blob.core.windows.net/${container_name}/${src_name}.vhd";
         construct_executed_json("vm create -n $name -l japanwest -g $resource_group -f $name -z Standard_F2s -d $vhd_url -y Linux", 1);
@@ -85,11 +85,10 @@ sub copy_image {
 }
 
 sub create_networks {
-    my ($resource_group, $name) = @_;
-    construct_executed_json("network vnet create $resource_group $name -l japaneast", 1);
-    construct_executed_json("network vnet subnet create $resource_group $name $name -l japaneast -a 10.0.0.0/8", 1);
+    my ($resource_group, $vnet_name, $name) = @_;
+    construct_executed_json("network vnet set $vnet_name $name -l japaneast", 1);
     construct_executed_json("network public-ip create $resource_group $name -l japaneast", 1);
-    construct_executed_json("network nic create $resource_group $name -k $name -m $name -p $name -l japaneast", 1);
+    construct_executed_json("network nic create $resource_group $name -k $vnet_name -m $vnet_name -p $name -l japaneast", 1);
 }
 
 sub construct_executed_json {

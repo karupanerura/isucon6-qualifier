@@ -1,28 +1,5 @@
 # 野良ビルド系置き場
 
-## lltsv
-setup/setup-lltsv.sh をrootまたはsudo権限があるユーザーで実行する。  
-バージョンはshell script内に記載。
-
-## pcre
-setup/setup-pcre.sh をrootまたはsudo権限があるユーザーで実行する。  
-バージョンはshell script内に記載。
-
-## redis
-setup/setup-redis.sh をrootまたはsudo権限があるユーザーで実行する。  
-バージョンはshell script内に記載。
-
-# nginx/openresty
-setup/setup-nginx.sh または setup/setup-openresty.sh をrootまたはsudo権限があるユーザーで実行する。  
-デフォルトでSSL、Stub、Gzip static、PCRE Jitが使える。  
-バージョンはshell script内に記載。
-
-# memcached
-
-libeventを先にインストールする。  
-setup/setup-memcached.sh をrootまたはsudo権限があるユーザーで実行する。  
-バージョンはshell script内に記載。
-
 # mysql-build
 
 めんどいのでrootに入れてしまえ。

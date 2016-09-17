@@ -8,4 +8,3 @@ perl setup.pl build install clean
 sudo -H chsh -s /usr/bin/zsh `whoami`
 echo 'exec zsh -l' > ~/.bashrc
 ```
-

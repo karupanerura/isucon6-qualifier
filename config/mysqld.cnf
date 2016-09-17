@@ -1,28 +1,20 @@
-#
-# The MySQL database server configuration file.
-#
-# You can copy this to one of:
-# - "/etc/mysql/my.cnf" to set global options,
-# - "~/.my.cnf" to set user-specific options.
-# 
-# One can use all long options that the program supports.
-# Run program with --help to get a list of available options and with
-# --print-defaults to see which it would actually understand and use.
-#
-# For explanations see
-# http://dev.mysql.com/doc/mysql/en/server-system-variables.html
-
-# This will be passed to all mysql clients
-# It has been reported that passwords should be enclosed with ticks/quotes
-# escpecially if they contain "#" chars...
-# Remember to edit /etc/mysql/debian.cnf when changing the socket location.
-
-# Here is entries for some specific programs
-# The following values assume you have at least 32M ram
+### oniyamma mysqld.cnf
 
 [mysqld_safe]
-socket		= /var/run/mysqld/mysqld.sock
-nice		= 0
+socket    = /var/run/mysqld/mysqld.sock
+nice      = 0
+log-error = /var/log/mysqld.log
+pid-file  = /var/run/mysqld/mysqld.pid
+
+[mysqld]
+datadir = /var/lib/mysql
+socket  = /var/run/mysqld/mysqld.sock
+
+[client]
+user = root
+
+[mysqladmin]
+user = root
 
 [mysqld]
 port = 3306
@@ -30,46 +22,62 @@ bind-address = 0.0.0.0
 skip_name_resolve
 skip_external_locking
 default_storage_engine = InnoDB
-transaction_isolation = READ-COMMITTED ## XXX: 要調整
+transaction_isolation = READ-COMMITTED
 
 ## network
 max_allowed_packet = 16M
-max_connections = 1000
+max_connections    = 1000
 max_connect_errors = 10000
 
 ## cache size
-table_open_cache = 2000
-thread_cache_size = 100
-query_cache_type = 1
-query_cache_size = 200M
-binlog_cache_size = 16M
+table_open_cache    = 2000
+thread_cache_size   = 600
+#query_cache_type    = 0
+query_cache_type    = 1
+query_cache_size    = 200M
+binlog_cache_size   = 16M
 max_heap_table_size = 64M
-tmp_table_size = 64M
+tmp_table_size      = 64M
+
+## thread_buffers
+sort_buffer_size     = 4M
+read_rnd_buffer_size = 1M
+join_buffer_size     = 256K
+read_buffer_size     = 1M
 
 ## log
 ## TODO: 提出前に消すこと
 log_error = /tmp/mysql-error.log
 
-
 ## slow query log
-
-# 提出時
-# slow_query_log = 0
-
-# 開発時
+## TODO: 提出前にOFFにすること
+#slow_query_log = 0
 slow_query_log = 1
 slow_query_log_file = /tmp/mysql-slow.log
 long_query_time = 0.0
 log_queries_not_using_indexes
 
 ## innodb
-innodb_buffer_pool_size = 2G ## XXX: 要調整
+innodb_buffer_pool_size = 2G
 innodb_data_file_path = ibdata1:10M:autoextend
 innodb_log_buffer_size = 16M
 innodb_log_file_size = 512M
 innodb_doublewrite = 0
 innodb_lock_wait_timeout = 5
 innodb_support_xa = 1
-innodb_flush_log_at_trx_commit = 0
-innodb_flush_method = O_DIRECT ## XXX: 要調整
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
 innodb_file_per_table
+
+## SSD
+#innodb_flush_neighbors = 0
+#innodb_read_ahead_threshold = 0
+#innodb_adaptive_flushing_lwm = 30
+#innodb_io_capacity     = 1000
+#innodb_io_capacity_max = 1000
+#innodb_lru_scan_depth  = 1000
+
+[mysqld-5.6]
+performance_schema = OFF
+metadata_locks_hash_instances = 256
+table_open_cache_instances = 8

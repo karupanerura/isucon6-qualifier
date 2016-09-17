@@ -1,7 +1,7 @@
 ---
 
 - hosts: all
-  remote_user: karupanerura
+  remote_user: oniyanma
   become: yes
   tasks:
     - include: tasks/01_common.yaml
@@ -12,7 +12,7 @@
   tags: init
 
 - hosts: all
-  remote_user: karupanerura
+  remote_user: oniyanma
   become: yes
   tasks:
     - include: tasks/06_nginx.yaml

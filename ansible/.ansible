@@ -1,0 +1,8 @@
+ask_pass=True
+
+[defaults]
+transport = ssh
+
+[ssh_connection]
+pipeline = true
+ssh_args = -o ControlMaster=auto -o ControlPersist=300s

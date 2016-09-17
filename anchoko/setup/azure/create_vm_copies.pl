@@ -89,6 +89,7 @@ sub create_networks {
     construct_executed_json("network vnet set $vnet_name $name -l japaneast", 1);
     construct_executed_json("network public-ip create $resource_group $name -l japaneast", 1);
     construct_executed_json("network nic create $resource_group $name -k $vnet_name -m $vnet_name -p $name -l japaneast", 1);
+    construct_executed_json("network nic set -o $vnet_name $resource_group $name", 1);
 }
 
 sub construct_executed_json {

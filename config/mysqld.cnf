@@ -50,11 +50,16 @@ tmp_table_size = 64M
 ## TODO: 提出前に消すこと
 log_error = /tmp/mysql-error.log
 
+
 ## slow query log
-## TODO: 提出前に消すこと
+
+# 提出時
+# slow_query_log = 0
+
+# 開発時
 slow_query_log = 1
 slow_query_log_file = /tmp/mysql-slow.log
-long_query_time = 0.1
+long_query_time = 0.0
 log_queries_not_using_indexes
 
 ## innodb

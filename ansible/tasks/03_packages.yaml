@@ -33,6 +33,7 @@
     - perl
     - perl-doc
     - percona-toolkit
+    - zip
 - name: install packages (daemons)
   apt: name={{ item }} update_cache=yes cache_valid_time=3600
   with_items:
@@ -46,7 +47,7 @@
     - mackerel-agent
 - name: download and install lltsv
   get_url: url=https://github.com/sonots/lltsv/releases/download/0.5.1/lltsv_linux_amd64 dest=/usr/bin/lltsv mode=0755
-# - name: download alp
-#   get_url: url=https://github.com/tkuchiki/alp/releases/download/v0.3.1/alp_linux_amd64.zip dest=/tmp/alp_linux_amd64.zip
-# - name: unarchive alp
-#   unarchive: src=/tmp/alp_linux_amd64.zip dest=/usr/bin remote_src=yes mode=+x
+- name: download alp
+  get_url: url=https://github.com/tkuchiki/alp/releases/download/v0.3.1/alp_linux_amd64.zip dest=/tmp/alp_linux_amd64.zip
+- name: unarchive alp
+  unarchive: src=/tmp/alp_linux_amd64.zip dest=/usr/bin mode=0755 copy=no

@@ -4,6 +4,12 @@
 brew install ansible
 ```
 
+# ホスト情報を更新
+
+```bash
+bin/update-hosts.pl > hosts
+```
+
 # run
 
 ## 初回構築

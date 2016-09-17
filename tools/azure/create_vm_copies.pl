@@ -12,17 +12,29 @@ my $dry_run = 0;
 main(@ARGV);
 
 sub main {
-    my ($resource_group, $vnet_name, $src_name, $needs_dry_run) = @_;
+    my ($resource_group, $vnet_name, $src_name_or_url, $needs_dry_run) = @_;
     if ($needs_dry_run) {
         $dry_run = 1;
     }
-    my $vm_list = construct_executed_json("vm list $resource_group");
-    if (ref $vm_list ne 'ARRAY') {
-        die 'なんかおかしい';
+
+    my ($src_url, $src_name);
+
+    if ($src_name_or_url =~ /^http.+\/(.+)\.vhd$/) {
+        $src_url = $src_name_or_url;
+        $src_name = $1;
+    } else {
+        $src_name = $src_name_or_url;
     }
-    my ($src) = grep { $_->{name} eq $src_name } @$vm_list;
-    deallocate_machine($resource_group, $src);
-    my $src_url = $src->{storageProfile}->{osDisk}->{vhd}->{uri} || '';
+
+    unless ($src_url) {
+        my $vm_list = construct_executed_json("vm list $resource_group");
+        if (ref $vm_list ne 'ARRAY') {
+            die 'なんかおかしい';
+        }
+        my ($src) = grep { $_->{name} eq $src_name } @$vm_list;
+        deallocate_machine($resource_group, $src);
+        $src_url = $src->{storageProfile}->{osDisk}->{vhd}->{uri} || '';
+    }
 
     my $storage_account = setup_storage_accounts($resource_group);
 

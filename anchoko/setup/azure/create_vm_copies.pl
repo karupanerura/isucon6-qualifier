@@ -34,16 +34,16 @@ sub main {
         create_networks($resource_group, $vnet_name, $name);
 
         my $vhd_url = "https://${storage_account}.blob.core.windows.net/${container_name}/${src_name}.vhd";
-        construct_executed_json("vm create -n $name -l japanwest -g $resource_group -f $name -z Standard_F2s -d $vhd_url -y Linux", 1);
+        construct_executed_json("vm create -n $name -l japaneast -g $resource_group -f $name -z Standard_F2s -d $vhd_url -y Linux", 1);
     }
 }
 
 sub deallocate_machine {
     my ($resource_group, $src) = @_;
     my $name = $src->{name};
-    if ($src->{powerState} =~ /^VM run/) {
+    if ($src->{powerState} =~ /^VM (?:run|stop)/) {
         construct_executed_json("vm stop $resource_group $name", 1);
-        construct_executed_json("vm deallocat $resource_group $name", 1);
+        construct_executed_json("vm deallocate $resource_group $name", 1);
     }
 }
 
@@ -86,7 +86,7 @@ sub copy_image {
 
 sub create_networks {
     my ($resource_group, $vnet_name, $name) = @_;
-    construct_executed_json("network vnet set $vnet_name $name -l japaneast", 1);
+    construct_executed_json("network vnet set $resource_group $vnet_name", 1);
     construct_executed_json("network public-ip create $resource_group $name -l japaneast", 1);
     construct_executed_json("network nic create $resource_group $name -k $vnet_name -m $vnet_name -p $name -l japaneast", 1);
     construct_executed_json("network nic set -o $vnet_name $resource_group $name", 1);

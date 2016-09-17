@@ -37,22 +37,27 @@ CLIでやるよりポチポチするほうが楽そう
 ### ssh to VM
 ```
 # vm show <group-name> <image>
-azure vm show isucon5-qualifier-00 image
-> data:    Network Profile:
-> data:      Network Interfaces:
-> data:        Network Interface #1:
-> data:          Primary                   :true
-> data:          MAC Address               :00-0D-3A-50-68-28
-> data:          Provisioning State        :Succeeded
-> data:          Name                      :image
-> data:          Location                  :japaneast
-> data:            Public IP address       :13.78.91.251
-> data:
-> data:    Diagnostics Instance View:
-> info:    vm show command OK
 
-ssh isucon@13.78.91.251
-# あとはよしなに
+$ azure vm list-ip-address
+info:    Executing command vm list-ip-address
++ Getting virtual machines
++ Looking up the NIC "bench"
++ Looking up the public ip "bench"
++ Looking up the NIC "image"
++ Looking up the public ip "image"
++ Looking up the NIC "image_app"
++ Looking up the public ip "image_app"
++ Looking up the NIC "image_infra"
++ Looking up the public ip "image_infra"
+data:    Resource Group        Name         Public IP Address
+data:    --------------------  -----------  -----------------
+data:    ISUCON5-QUALIFIER-01  bench        40.74.123.114
+data:    ISUCON5-QUALIFIER-01  image        40.74.126.137
+data:    ISUCON5-QUALIFIER-01  image_app    104.214.148.251
+data:    ISUCON5-QUALIFIER-01  image_infra  40.74.95.219
+info:    vm list-ip-address command OK
+
+ssh <your-name>@104.214.148.251
 ```
 
 ### stop VM
@@ -68,3 +73,12 @@ azure vm deallocate isucon5-qualifier-00 image
 ```
 
 ストレージの課金が継続されるのかは確認中。コンテナーとやらを削除してあげないと課金され続けそうな？
+
+### チートシート
+
+* `azure account list` : サブスクリプションIDが欲しい時
+* `azure account set <subscription id>` : SETしておくと `-s` とか毎回付けなくて済むので楽
+* `azure storage account list` : storageの情報が欲しければ
+* `azure vm list` : vm の状態を見たいとき
+
+

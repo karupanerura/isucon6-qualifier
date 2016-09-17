@@ -24,9 +24,15 @@ sudo -H pt-query-digest /tmp/mysql-slow.log
 
 ## アクセスログの分析
 
+https://github.com/tkuchiki/alp
+
 ```bash
-cat /var/log/nginx/access.log | ./logstats.pl time
-cat /var/log/nginx/access.log | ./logstats.pl count
+alp -f /tmp/nginx.access.log
+alp -f /tmp/nginx.access.log --sum
+alp -f /tmp/nginx.access.log --cnt
+alp -f /tmp/nginx.access.log --start-time "11:45:39+09:00"
+alp -f /tmp/nginx.access.log --start-time-duration 2m
+alp -f /tmp/nginx.access.log --aggregates "/diary/entry/\d+"
 ```
 
 ## ログのローテート

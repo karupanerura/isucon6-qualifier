@@ -8,17 +8,18 @@
     - include: tasks/02_apt.yaml
     - include: tasks/03_packages.yaml
     - include: tasks/04_accounts.yaml
+    - include: tasks/05_tools.yaml
   tags: init
 
 - hosts: all
   remote_user: karupanerura
   become: yes
   tasks:
-    - include: tasks/05_nginx.yaml
+    - include: tasks/06_nginx.yaml
       tags: nginx
-    - include: tasks/06_mysql.yaml
+    - include: tasks/07_mysql.yaml
       tags: mysql
-    - include: tasks/07_supervisor.yaml
+    - include: tasks/08_supervisor.yaml
       tags: supervisor
-    - include: tasks/08_memcached.yaml
+    - include: tasks/09_memcached.yaml
       tags: memcached

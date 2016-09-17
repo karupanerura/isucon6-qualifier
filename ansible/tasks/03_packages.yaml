@@ -1,0 +1,43 @@
+---
+
+- name: remove nano
+  apt: name=nano state=absent
+- name: install packages (build tools)
+  apt: name={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - build-essential
+    - pkg-config
+    - cmake
+    - autoconf
+- name: install packages (libraries)
+  apt: name={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - libmysqlclient-dev
+    - libssl-dev
+    - libreadline-dev
+    - libxml2-dev
+    - libpcre3-dev
+- name: install packages (tools)
+  apt: name={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - vim
+    - dstat
+    - tmux
+    - ngrep
+    - tcpdump
+    - curl
+    - wget
+    - git
+    - perl
+    - perl-doc
+    - percona-toolkit
+- name: install packages (daemons)
+  apt: name={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - nginx
+    - supervisor
+    - memcached
+    - redis-server
+    - mysql-server
+    - mysql-common
+    - mysql-client

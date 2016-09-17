@@ -1,0 +1,18 @@
+---
+
+- name: create users
+  user: name={{ item }} shell=/bin/bash groups=wheel
+  with_items:
+    - silvers
+    - ar_tama
+    - karupanerura
+- name: create ssh-key
+  user: name=isucon shell=/bin/bash groups=wheel generate_ssh_key=yes
+- name: add pubkey to authorized_keys (silvers)
+  authorized_key: user=silvers key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdvdkO4DFFFh28Qk3TLUQ4eH2BwNbziU0mMBU25+Kta3Vqm1+EfFWXjMyEumgVmq5I6uJwoYcGPzEiFrkGSTqcBcK+xVtRjSd8OfoYHmruLozkYpmmhJxDRf6u5RKW7jLPBcxvCR2k9/mGIBP7diPgwdvjcPufhcUoXWaJJKHgXPaBX/Vje5F8qBVjvrbHs3d7900vDlUfS9BUUQgbXwPOSDJ2tSvEI7LHfuHj8SJajJFJuO9TvM8HaQdF6ALM2DjiMRbZ+c8n9qH3m/NbP0hJ54Y2evAxxiVZI1dg/VEzC03cZ8n5GSelTVQZrFA7L2lmhIdgOKOvOtl/E1KtihJb y-matsumoto@mf"
+- name: add pubkey to authorized_keys (ar_tama)
+  authorized_key: user=ar_tama key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDK4XjkiprSNpDDcSHEztHEy+8lwmvj6nyKBAfj1gs/BdQYJkxPTllcdpp4QN8JAVuSOGzK9dWSBTnHMGEyRKvCeE5iGNefdAPEBViJfP81tM3WchRvwmRUIIadI+y1FjhLq6WRMMzINth8sGJF5ASINGmzz5/vNSKB7OMUvYHalXBZQr8785DcYATZhTWoT5PMlKPnoz99RT/ooOS04ah5PYh7OsDMOfpy/infBjTvpkd6wFgpFDgVB7f84ladBCBor1rCAZv5XiCCn/sqZYhxIzjZv/BL1m8hBjaEFM+rGgvKTtW3gMTnxkWAmIg8QLLfqVBQxaPh+QljZC0FyJ0X tama@Labit-air.local"
+- name: add pubkey to authorized_keys (karupanerura)
+  authorized_key: user=karupanerura key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDraZbO8OakrSMV+Q8OpEUhlaP2l58ZjafZutSNkymi0fYfB28xRyreiJKv3O8Kwt5VllPdcmsQRkm8UM4XqhGneiUj7Zrpc0TyzuMsLbMMSf3qDVp6jHvPVl+cwADXa7tZtl77seE9TtWebNRfdg2pmzXxtdSTsgzh1ft6xb/XolCRlBpwESKLouw88RxcjDIfWXMbKI0ijfhRsouq90gkVboBvegHVH3+wfXjmGpbuBlLGdx4nhMafXOSORSNj5Btl18dpeK8glkXCnmEamNm2KxTrHFHBLIlx+o3e5XLHN5C9TSR6FVvrlTjckQ97dAwngraUVZjJaibJ5r7IkR5 karupanerura@karupaneruras-MacBook-Pro.local"
+- name: sudo NOPASSWDnize
+  lineinfile: dest=/etc/sudoers state=present regexp='^%wheel ALL\=' line='%wheel ALL=(ALL) NOPASSWD:ALL' validate='visudo -cf %s'

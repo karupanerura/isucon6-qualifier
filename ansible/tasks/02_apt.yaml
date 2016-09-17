@@ -1,0 +1,9 @@
+---
+
+- name: add apt-key (percona)
+  apt_key: keyserver=keys.gnupg.net id=1C4CBDCDCD2EFD2A
+- name: add apt-repositories (percona)
+  apt_repository: repo="{{ item }}" state=present
+  with_items:
+    - deb http://repo.percona.com/apt {{ ansible_distribution_release }} main
+    - deb-src http://repo.percona.com/apt {{ ansible_distribution_release }} main

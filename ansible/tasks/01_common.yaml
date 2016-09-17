@@ -1,0 +1,10 @@
+---
+
+- name: set timezone to Asia/Tokyo
+  timezone: name=Asia/Tokyo
+- name: install common packages
+  apt: name={{ item }} update_cache=yes cache_valid_time=3600
+  with_items:
+    - language-pack-ja
+- name: generate locale (ja_JP.UTF-8)
+  locale_gen: name=ja_JP.UTF-8 state=present

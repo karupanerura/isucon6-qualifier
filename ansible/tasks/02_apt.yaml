@@ -1,9 +1,12 @@
 ---
 
 - name: add apt-key (percona)
-  apt_key: keyserver=keys.gnupg.net id=1C4CBDCDCD2EFD2A
+  apt_key: keyserver=keys.gnupg.net id=1C4CBDCDCD2EFD2A state=present
+- name: add apt-key (mackaerel)
+  apt_key: url=https://mackerel.io/assets/files/GPG-KEY-mackerel state=present
 - name: add apt-repositories (percona)
   apt_repository: repo="{{ item }}" state=present
   with_items:
     - deb http://repo.percona.com/apt {{ ansible_distribution_release }} main
     - deb-src http://repo.percona.com/apt {{ ansible_distribution_release }} main
+    - deb http://apt.mackerel.io/debian/ mackerel contrib

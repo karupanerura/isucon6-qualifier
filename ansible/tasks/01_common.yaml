@@ -8,3 +8,5 @@
     - language-pack-ja
 - name: generate locale (ja_JP.UTF-8)
   locale_gen: name=ja_JP.UTF-8 state=present
+- name: adjust hostname to azure hostname
+  hostname: name={{ azure_hostname|regex_replace('_', '-') }}

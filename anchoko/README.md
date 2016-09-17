@@ -2,25 +2,7 @@
 
 ## スロークエリログの分析
 
-### スロークエリログを有効にする
-
-```sql
-SET GLOBAL slow_query_log = 1;
-SET GLOBAL slow_query_log_file = '/tmp/mysql-slow.log';
-SET GLOBAL long_query_time = 0.0;
-```
-
-### スロークエリログを無効にする
-
-```sql
-SET GLOBAL slow_query_log = 0;
-```
-
-### インデックスが効いてないような遅いクエリだけ出す
-
-```sql
-SET GLOBAL long_query_time = 10.0;
-```
+設定は https://github.com/karupanerura/isucon6-qualifier/blob/master/config/mysqld.cnf を確認すること
 
 ### 時間順に出す
 
@@ -35,6 +17,7 @@ sudo -H mysqldumpslow -s c /tmp/mysql-slow.log
 ```
 
 ### digest
+
 ```bash
 sudo -H pt-query-digest /tmp/mysql-slow.log
 ```

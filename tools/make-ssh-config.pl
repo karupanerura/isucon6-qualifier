@@ -5,7 +5,7 @@ use feature qw/say/;
 
 use JSON::PP;
 
-chomp(my $out = `azure vm list-ip-address --json`);
+chomp(my $out = `azure vm list-ip-address -g ISUCON5-QUALIFIER-002 --json`);
 my $payloads = JSON::PP->new->utf8->decode($out);
 for my $payload (@$payloads) {
     for my $network_interface (@{ $payload->{networkProfile}->{networkInterfaces} }) {

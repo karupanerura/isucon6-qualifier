@@ -58,6 +58,7 @@ my $cache = Cache::Memcached::Fast::Safe->new({
 }
 
 my $CACHE_KEY_KEYWORDS = 'keywords';
+my $CACHE_KEY_HTML     = 'html';
 
 sub config {
     state $conf = {
@@ -151,7 +152,8 @@ get '/' => [qw/set_name/] => sub {
         push @entries, grep { $_->{id} == $id } @$entries;
     }
     for my $entry (@entries) {
-        $entry->{html}  = $self->htmlify($c, $entry->{description});
+        $entry->{html}  = $self->htmlify($c, $entry->{keyword}, $entry->{description});
+        $entry->{stars} = $self->load_stars($entry->{keyword});
     }
 
     my %id2ent = map { $_->{id} => $_ } @$entries;
@@ -194,6 +196,14 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
     $cache->delete($CACHE_KEY_KEYWORDS);
+    $cache->delete($CACHE_KEY_HTML . ":$keyword");
+    my $entries = $self->dbh->select_all(qq[
+        SELECT keyword FROM entry WHERE description LIKE "%$keyword%"
+    ]);
+
+    for my $entry (@$entries) {
+       $cache->delete($CACHE_KEY_HTML . ":$entry->{keyword}");
+    }
 
     $c->redirect('/');
 };
@@ -268,7 +278,7 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
         WHERE keyword = ?
     ], $keyword);
     $c->halt(404) unless $entry;
-    $entry->{html} = $self->htmlify($c, $entry->{description});
+    $entry->{html} = $self->htmlify($c, $entry->{keyword}, $entry->{description});
     $entry->{stars} = $self->select_stars($entry->{id});
 
     $c->render('keyword.tx', { entry => $entry });
@@ -289,6 +299,7 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
         WHERE keyword = ?
     ], $keyword);
     $cache->delete($CACHE_KEY_KEYWORDS);
+    $cache->delete($CACHE_KEY_HTML . ":$keyword");
     $c->redirect('/');
 };
 
@@ -313,6 +324,15 @@ post '/stars' => [qw/set_name authenticate/] => sub {
 };
 
 sub htmlify {
+    my ($self, $c, $keyword, $content) = @_;
+    my $cache_key = $CACHE_KEY_HTML . ":$keyword";
+    $cache->get_or_set(
+        $cache_key,
+        sub { $self->_htmlify($c, $content) }
+    );
+}
+
+sub _htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
     my $keywords = $self->_get_sorted_keywords;

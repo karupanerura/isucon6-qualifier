@@ -22,8 +22,8 @@ use Redis::Fast;
 use feature qw/state/;
 
 __PACKAGE__->_get_sorted_keywords();
-__PACKAGE__->dbh->select_all(qq[
-    select keyword, description from entry
+my $entries = __PACKAGE__->dbh->select_all(qq[
+    select keyword, description from entry where id < 7101
 ]);
 for my $e (@$entries) {
     __PACKAGE__->htmlify($e->{description});

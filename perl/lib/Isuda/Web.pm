@@ -11,7 +11,8 @@ use JSON::XS qw/decode_json encode_json/;
 use String::Random qw/random_string/;
 use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
-use Text::Xslate::Util qw/html_escape/;
+use HTML::Escape qw/escape_html/;
+# use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
 use Cache::Memcached::Fast::Safe;
 use Data::MessagePack;
@@ -350,10 +351,10 @@ sub _htmlify {
         my $kw = $1;
         $kw2sha{$kw} = "isuda_" . sha1_hex(encode_utf8($kw));
     }eg;
-    $content = html_escape($content);
+    $content = escape_html($content);
     while (my ($kw, $hash) = each %kw2sha) {
         my $url = $c->req->uri_for('/keyword/' . uri_escape_utf8($kw));
-        my $link = sprintf '<a href="%s">%s</a>', $url, html_escape($kw);
+        my $link = sprintf '<a href="%s">%s</a>', $url, escape_html($kw);
         $content =~ s/$hash/$link/g;
     }
     $content =~ s{\n}{<br \/>\n}gr;

@@ -90,6 +90,18 @@ sub config {
 
 sub dbh {
     my ($self) = @_;
+    if (ref $self ne 'HASH') {
+        return DBIx::Sunny->connect(config('dsn'), config('db_user'), config('db_password'), {
+            Callbacks => {
+                connected => sub {
+                    my $dbh = shift;
+                    $dbh->do(q[SET SESSION sql_mode='TRADITIONAL,NO_AUTO_VALUE_ON_ZERO,ONLY_FULL_GROUP_BY']);
+                    $dbh->do('SET NAMES utf8mb4');
+                    return;
+                },
+            },
+        });
+    }
     return $self->{dbh} //= DBIx::Sunny->connect(config('dsn'), config('db_user'), config('db_password'), {
         Callbacks => {
             connected => sub {

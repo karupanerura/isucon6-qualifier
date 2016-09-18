@@ -28,7 +28,7 @@ use feature qw/state/;
 
 my $cache = Cache::Memcached::Fast::Safe->new({
     servers => ['127.0.0.1:11211'],
-    namespace          => 'isucon5q:',
+    namespace          => 'isucon6q:isuda:',
     utf8               => 1,
     serialize_methods  => [\&_message_pack, \&_message_unpack],
     ketama_points      => 150,

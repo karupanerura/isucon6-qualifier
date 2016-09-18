@@ -20,10 +20,9 @@ use Redis::Fast;
 use feature qw/state/;
 
 BEGIN {
-    if (1) {
+    if (0) {
         use Devel::KYTProf;
         Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'load_stars');
         Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
         Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
         Devel::KYTProf->add_prof(__PACKAGE__, 'register');
@@ -122,9 +121,8 @@ get '/initialize' => sub {
         DELETE FROM entry WHERE id > 7101
     ]);
     $cache->delete($CACHE_KEY_KEYWORDS);
-    my $origin = config('isutar_origin');
-    my $url = URI->new("$origin/initialize");
-    Furl->new->get($url);
+    $self->dbh->query('TRUNCATE star');
+
     $c->render_json({
         result => 'ok',
     });
@@ -153,14 +151,14 @@ get '/' => [qw/set_name/] => sub {
     }
     for my $entry (@entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{keyword}, $entry->{description});
-        $entry->{stars} = $self->load_stars($entry->{keyword});
+        $entry->{stars} = $self->select_stars($entry->{id});
     }
 
-    my %kw2ent = map { $_->{keyword} => $_ } @$entries;
-    my $stars = $self->load_stars([keys %kw2ent]);
-    for my $keyword (keys %$stars) {
-        my $entry = $kw2ent{$keyword};
-        $entry->{stars} = $stars->{$keyword};
+    my %id2ent = map { $_->{id} => $_ } @$entries;
+    my $stars = $self->select_stars_multi([keys %id2ent]);
+    for my $id (keys %$stars) {
+        my $entry = $id2ent{$id};
+        $entry->{stars} = $stars->{$id};
     }
 
     my $total_entries = $self->dbh->select_one(q[
@@ -279,7 +277,7 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
     ], $keyword);
     $c->halt(404) unless $entry;
     $entry->{html} = $self->htmlify($c, $entry->{keyword}, $entry->{description});
-    $entry->{stars} = $self->load_stars($entry->{keyword});
+    $entry->{stars} = $self->select_stars($entry->{id});
 
     $c->render('keyword.tx', { entry => $entry });
 };
@@ -301,6 +299,26 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     $cache->delete($CACHE_KEY_KEYWORDS);
     $cache->delete($CACHE_KEY_HTML . ":$keyword");
     $c->redirect('/');
+};
+
+post '/stars' => [qw/set_name authenticate/] => sub {
+    my ($self, $c) = @_;
+    my $keyword = $c->req->parameters->{keyword};
+
+    my $entry = $self->dbh->select_row(qq[
+        SELECT id FROM entry
+        WHERE keyword = ?
+    ], $keyword);
+    $c->halt(404) unless $entry;
+
+    $self->dbh->query(q[
+        INSERT INTO star (entry_id, user_name)
+        VALUES (?, ?)
+    ], $entry->{id}, $c->req->parameters->{user});
+
+    $c->render_json({
+        result => 'ok',
+    });
 };
 
 sub htmlify {
@@ -343,18 +361,6 @@ sub _get_sorted_keywords {
     );
 }
 
-sub load_stars {
-    my ($self, $keyword) = @_;
-    my $origin = config('isutar_origin');
-    my $url = URI->new("$origin/stars");
-    $url->query_form(keyword => $keyword);
-    my $ua = Furl->new;
-    my $res = $ua->get($url);
-    my $data = decode_json $res->content;
-
-    $data->{stars};
-}
-
 sub is_spam_contents {
     my $content = shift;
     my $ua = Furl->new;
@@ -363,6 +369,35 @@ sub is_spam_contents {
     ]);
     my $data = decode_json $res->content;
     !$data->{valid};
+}
+
+sub select_stars {
+    my ($self, $id) = @_;
+    my $entries = $self->select_stars_multi([$id]);
+    return $entries->{$id};
+};
+
+sub select_stars_multi {
+    my ($self, $ids) = @_;
+
+    my ($sql, @bind) = $self->dbh->fill_arrayref(q[
+      SELECT
+        entry_id, user_name
+      FROM
+        star
+      WHERE
+        entry_id IN (?)
+    ], $ids);
+
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@bind);
+
+    my %stars;
+    $sth->bind_columns(\my $entry_id, \my $user_name);
+    push @{ $stars{$entry_id} ||= [] } => $user_name while $sth->fetch;
+    $sth->finish;
+
+    return \%stars;
 }
 
 1;

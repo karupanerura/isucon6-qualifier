@@ -69,6 +69,9 @@ innodb_flush_log_at_trx_commit = 2
 innodb_flush_method = O_DIRECT
 innodb_file_per_table
 
+innodb_buffer_pool_dump_at_shutdown = 1
+innodb_buffer_pool_load_at_startup  = 1
+
 ## SSD
 #innodb_flush_neighbors = 0
 #innodb_read_ahead_threshold = 0

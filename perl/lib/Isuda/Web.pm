@@ -89,12 +89,18 @@ get '/' => [qw/set_name/] => sub {
     my $PER_PAGE = 10;
     my $page = $c->req->parameters->{page} || 1;
 
-    my $entries = $self->dbh->select_all(qq[
-        SELECT * FROM entry
+    my $records = $self->dbh->select_all(qq[
+        SELECT id FROM entry
         ORDER BY updated_at DESC
         LIMIT $PER_PAGE
         OFFSET @{[ $PER_PAGE * ($page-1) ]}
     ]);
+    my $ids = [map { $_->{id} } @$records];
+
+    # TODO: cache してもいいかも
+    my $entries = $self->dbh->select_all(qq[
+        SELECT keyword, description FROM entry WHERE id in (?)
+    ], $ids);
     foreach my $entry (@$entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
         $entry->{stars} = $self->load_stars($entry->{keyword});

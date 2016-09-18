@@ -75,6 +75,7 @@ sub select_stars_multi {
     ], $keywords);
 
     my $sth = $self->dbh->prepare_cached($sql);
+    $sth->execute;
 
     my %stars;
     my ($keyword, $user_name);

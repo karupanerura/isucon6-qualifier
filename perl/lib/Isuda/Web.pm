@@ -141,7 +141,7 @@ get '/' => [qw/set_name/] => sub {
         push @entries, grep { $_->{id} == $id } @$entries;
     }
     for my $entry (@entries) {
-        $entry->{html}  = $self->htmlify($c, $entry->{id}, $entry->{description});
+        $entry->{html}  = $self->htmlify($c, $entry->{keyword}, $entry->{description});
         $entry->{stars} = $self->load_stars($entry->{keyword});
     }
 
@@ -277,8 +277,8 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
 };
 
 sub htmlify {
-    my ($self, $c, $id, $content) = @_;
-    my $cache_key = $CACHE_KEY_HTML . ":$id";
+    my ($self, $c, $keyword, $content) = @_;
+    my $cache_key = $CACHE_KEY_HTML . ":$keyword";
     $cache->get_or_set(
         $cache_key,
         sub { $self->_htmlify($c, $content) }

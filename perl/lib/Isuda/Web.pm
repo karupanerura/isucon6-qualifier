@@ -292,6 +292,26 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     $c->redirect('/');
 };
 
+post '/stars' => [qw/set_name authenticate/] => sub {
+    my ($self, $c) = @_;
+    my $keyword = $c->req->parameters->{keyword};
+
+    my $entry = $self->dbh->select_row(qq[
+        SELECT id FROM entry
+        WHERE keyword = ?
+    ], $keyword);
+    $c->halt(404) unless $entry;
+
+    $self->dbh->query(q[
+        INSERT INTO star (entry_id, user_name)
+        VALUES (?, ?)
+    ], $entry->{id}, $c->req->parameters->{user});
+
+    $c->render_json({
+        result => 'ok',
+    });
+};
+
 sub htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
@@ -352,6 +372,7 @@ sub select_stars {
 
 sub select_stars_multi {
     my ($self, $ids) = @_;
+
     my ($sql, @bind) = $self->dbh->fill_arrayref(q[
       SELECT
         entry_id, user_name
@@ -371,25 +392,5 @@ sub select_stars_multi {
 
     return \%stars;
 }
-
-post '/stars' => sub {
-    my ($self, $c) = @_;
-    my $keyword = $c->req->parameters->{keyword};
-
-    my $entry = $self->dbh->select_row(qq[
-        SELECT id FROM entry
-        WHERE keyword = ?
-    ], $keyword);
-    $c->halt(404) unless $entry;
-
-    $self->dbh->query(q[
-        INSERT INTO star (entry_id, user_name)
-        VALUES (?, ?)
-    ], $entry->{id}, $c->req->parameters->{user});
-
-    $c->render_json({
-        result => 'ok',
-    });
-};
 
 1;

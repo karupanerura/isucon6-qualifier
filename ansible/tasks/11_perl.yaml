@@ -1,0 +1,15 @@
+---
+
+- name: setup perl conf
+  copy: src=config/{{ item }}.perl.service dest=/etc/systemd/system/{{ item }}.perl.service owner=root group=root mode=0644
+  with_items:
+    - isuda
+    - isutar
+- name: reload systemd
+  shell: systemctl daemon-reload
+- name: stop perl (isutar)
+  service: name=isutar.perl state=restarted
+- name: disable perl (isutar)
+  shell: systemctl disable isutar.perl.service
+- name: reload perl (isuda)
+  service: name=isuda.perl state=restarted

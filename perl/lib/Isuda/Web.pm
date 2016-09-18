@@ -373,7 +373,8 @@ sub is_spam_contents {
 
 sub select_stars {
     my ($self, $id) = @_;
-    return $self->select_stars_multi([$id]);
+    my $entries = $self->select_stars_multi([$id]);
+    return $entries->{$id};
 };
 
 sub select_stars_multi {

@@ -13,10 +13,30 @@ use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
 use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
-use Cache::Memory::Simple;
+use Cache::Memcached::Fast::Safe;
+use Data::MessagePack;
+use Compress::LZ4;
 use feature qw/state/;
 
-state $cache = Cache::Memory::Simple->new();
+{
+    my $msgpack = Data::MessagePack->new->utf8;
+    sub _message_pack   { $msgpack->pack(@_)   }
+    sub _message_unpack { $msgpack->unpack(@_) }
+    sub _compress_lz4   { ${$_[1]} = Compress::LZ4::compress(${$_[0]})   }
+    sub _uncompress_lz4 { ${$_[1]} = Compress::LZ4::decompress(${$_[0]}) }
+}
+
+my $cache = Cache::Memcached::Fast::Safe->new({
+    servers => ['127.0.0.1:11211'],
+    namespace          => 'isucon5q:',
+    utf8               => 1,
+    serialize_methods  => [\&_message_pack, \&_message_unpack],
+    ketama_points      => 150,
+    hash_namespace     => 0,
+    compress_threshold => 5_000,
+    compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
+});
+
 my $CACHE_KEY_KEYWORDS = 'keywords';
 
 sub config {

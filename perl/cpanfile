@@ -11,5 +11,7 @@ requires 'Starlet';
 requires 'String::Random';
 requires 'URI::Escape';
 requires 'Cache::Memory::Simple';
-
+requires 'Cache::Memcached::Fast::Safe';
+requires 'Data::MessagePack';
+requires 'Compress::LZ4';
 

@@ -12,4 +12,4 @@
 - name: disable perl (isutar)
   shell: systemctl disable isutar.perl.service
 - name: reload perl (isuda)
-  service: name=isuda.perl state=restarted
+  service: name=isuda.perl state=stopped

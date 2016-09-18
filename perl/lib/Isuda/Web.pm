@@ -233,7 +233,7 @@ sub htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
     my $keywords = $self->dbh->select_all(qq[
-        SELECT * FROM entry
+        SELECT keyword FROM entry
     ]);
     my %kw2sha;
     my $re = join '|', map { quotemeta $_->{keyword} } @$keywords;

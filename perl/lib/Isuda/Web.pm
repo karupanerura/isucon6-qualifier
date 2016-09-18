@@ -21,13 +21,6 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
-__PACKAGE__->_get_sorted_keywords();
-my $entries = __PACKAGE__->dbh->select_all(qq[
-    select keyword, description from entry where id < 7101
-]);
-for my $e (@$entries) {
-    __PACKAGE__->htmlify($e->{description});
-}
 
 # BEGIN {
 #     if (0) {
@@ -58,6 +51,15 @@ my $cache = Cache::Memory::Simple->new();
 #     compress_threshold => 5_000,
 #     compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
 # });
+
+__PACKAGE__->_get_sorted_keywords();
+my $entries = __PACKAGE__->dbh->select_all(qq[
+    select keyword, description from entry where id < 7101
+]);
+for my $e (@$entries) {
+    __PACKAGE__->htmlify($e->{description});
+}
+
 
 {
     my %redis;

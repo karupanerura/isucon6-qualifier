@@ -104,7 +104,7 @@ get '/' => [qw/set_name/] => sub {
     for my $id (@$ids) {
         push @entries, grep { $_->{id} == $id } @$entries;
     }
-    foreach my $entry (@entries) {
+    for my $entry (@entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
         $entry->{stars} = $self->load_stars($entry->{keyword});
     }

@@ -33,14 +33,35 @@ get '/initialize' => sub {
 get '/stars' => sub {
     my ($self, $c) = @_;
 
-    my $stars = $self->dbh->select_all(q[
-        SELECT * FROM star WHERE keyword = ?
-    ], $c->req->parameters->{keyword});
+    my @keywords = $c->req->parameters->get_all('keyword');
+    my $stars = $self->select_stars_multi(\@keywords);
 
     $c->render_json({
-        stars => $stars,
+        stars => @keywords == 1 ? $stars->{$keywords[0]} : $stars,
     });
 };
+
+sub select_stars_multi {
+    my ($self, $keywords) = @_;
+    my ($sql, @bind) = $self->dbh->fill_arrayref(q[
+      SELECT
+        keyword, user_name
+      FROM
+        star
+      WHERE
+        keyword IN (?)
+    ], $keywords);
+
+    my $sth = $self->dbh->prepare_cached($sql);
+
+    my %stars;
+    my ($keyword, $user_name);
+    $sth->bind_columns(\$keyword, \$user_name);
+    push @{ $stars{$keyword} ||= [] } => $user_name while $sth->fetch;
+    $sth->finish;
+
+    return \%stars;
+}
 
 post '/stars' => sub {
     my ($self, $c) = @_;

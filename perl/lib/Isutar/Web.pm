@@ -74,8 +74,6 @@ sub select_stars_multi {
         keyword IN (?)
     ], $keywords);
 
-    use Data::Dumper; warn Dumper $keywords;
-
     my $sth = $self->dbh->prepare($sql);
     $sth->execute(@bind);
 
@@ -83,8 +81,6 @@ sub select_stars_multi {
     $sth->bind_columns(\my $keyword, \my $user_name);
     push @{ $stars{$keyword} ||= [] } => $user_name while $sth->fetch;
     $sth->finish;
-
-    use Data::Dumper; warn Dumper \%stars;
 
     return \%stars;
 }

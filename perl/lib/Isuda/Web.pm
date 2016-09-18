@@ -13,6 +13,31 @@ use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
 use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
+use Cache::Memcached::Fast::Safe;
+use Data::MessagePack;
+use Compress::LZ4;
+use feature qw/state/;
+
+{
+    my $msgpack = Data::MessagePack->new->utf8;
+    sub _message_pack   { $msgpack->pack(@_)   }
+    sub _message_unpack { $msgpack->unpack(@_) }
+    sub _compress_lz4   { ${$_[1]} = Compress::LZ4::compress(${$_[0]})   }
+    sub _uncompress_lz4 { ${$_[1]} = Compress::LZ4::decompress(${$_[0]}) }
+}
+
+my $cache = Cache::Memcached::Fast::Safe->new({
+    servers => ['127.0.0.1:11211'],
+    namespace          => 'isucon5q:',
+    utf8               => 1,
+    serialize_methods  => [\&_message_pack, \&_message_unpack],
+    ketama_points      => 150,
+    hash_namespace     => 0,
+    compress_threshold => 5_000,
+    compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
+});
+
+my $CACHE_KEY_KEYWORDS = 'keywords';
 
 sub config {
     state $conf = {
@@ -132,6 +157,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
+    $cache->delete($CACHE_KEY_KEYWORDS);
 
     $c->redirect('/');
 };
@@ -217,24 +243,23 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     my $keyword = $c->args->{keyword} or $c->halt(400);
     $c->req->parameters->{delete} or $c->halt(400);
 
-    $c->halt(404) unless $self->dbh->select_row(qq[
-        SELECT * FROM entry
-        WHERE keyword = ?
-    ], $keyword);
+    my $keywords = $self->_get_sorted_keywords;
+    unless (grep { $_->{keyword} eq $keyword } @$keywords) {
+        $c->halt(404);
+    }
 
     $self->dbh->query(qq[
         DELETE FROM entry
         WHERE keyword = ?
     ], $keyword);
+    $cache->delete($CACHE_KEY_KEYWORDS);
     $c->redirect('/');
 };
 
 sub htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
-    my $keywords = $self->dbh->select_all(qq[
-        SELECT keyword FROM entry ORDER BY CHARACTER_LENGTH(keyword) DESC
-    ]);
+    my $keywords = $self->_get_sorted_keywords;
     my %kw2sha;
     my $re = join '|', map { quotemeta $_->{keyword} } @$keywords;
     $content =~ s{($re)}{
@@ -248,6 +273,18 @@ sub htmlify {
         $content =~ s/$hash/$link/g;
     }
     $content =~ s{\n}{<br \/>\n}gr;
+}
+
+sub _get_sorted_keywords {
+    my ($self) = @_;
+    return $cache->get_or_set(
+        $CACHE_KEY_KEYWORDS,
+        sub {
+            $self->dbh->select_all(qq[
+                SELECT keyword FROM entry ORDER BY CHARACTER_LENGTH(keyword) DESC
+            ]);
+        }
+    );
 }
 
 sub load_stars {

@@ -99,9 +99,13 @@ get '/' => [qw/set_name/] => sub {
 
     # TODO: cache してもいいかも
     my $entries = $self->dbh->select_all(qq[
-        SELECT keyword, description FROM entry WHERE id in (?)
+        SELECT id, keyword, description FROM entry WHERE id in (?)
     ], $ids);
-    foreach my $entry (@$entries) {
+    my @entries;
+    for my $id (@$ids) {
+        push @entries, grep { $_->{id} == $id } @$entries;
+    }
+    foreach my $entry (@entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
         $entry->{stars} = $self->load_stars($entry->{keyword});
     }

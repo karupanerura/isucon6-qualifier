@@ -8,6 +8,7 @@ use URI::Escape qw/uri_escape_utf8/;
 use Cache::Memcached::Fast::Safe;
 use Data::MessagePack;
 use Compress::LZ4;
+use Redis::Fast;
 
 {
     my $msgpack = Data::MessagePack->new->utf8;
@@ -27,6 +28,14 @@ my $cache = Cache::Memcached::Fast::Safe->new({
     compress_threshold => 5_000,
     compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
 });
+
+{
+    my %redis;
+    sub redis {
+        $redis{$$} //= Redis::Fast->new(server => '127.0.0.1:6379');
+    }
+    __PACKAGE__->redis;
+}
 
 sub dbh {
     my ($self) = @_;

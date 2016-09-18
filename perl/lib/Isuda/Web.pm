@@ -16,6 +16,7 @@ use List::Util qw/min max/;
 use Cache::Memcached::Fast::Safe;
 use Data::MessagePack;
 use Compress::LZ4;
+use Redis::Fast;
 use feature qw/state/;
 
 {
@@ -36,6 +37,14 @@ my $cache = Cache::Memcached::Fast::Safe->new({
     compress_threshold => 5_000,
     compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
 });
+
+{
+    my %redis;
+    sub redis {
+        $redis{$$} //= Redis::Fast->new(server => '127.0.0.1:6379');
+    }
+    __PACKAGE__->redis;
+}
 
 my $CACHE_KEY_KEYWORDS = 'keywords';
 

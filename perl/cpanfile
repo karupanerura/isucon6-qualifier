@@ -14,4 +14,4 @@ requires 'Cache::Memory::Simple';
 requires 'Cache::Memcached::Fast::Safe';
 requires 'Data::MessagePack';
 requires 'Compress::LZ4';
-
+requires 'Redis::Fast';

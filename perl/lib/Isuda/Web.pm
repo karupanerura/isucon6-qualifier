@@ -15,6 +15,7 @@ use HTML::Escape qw/escape_html/;
 # use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
 use Cache::Memcached::Fast::Safe;
+use Cache::Memory::Simple;
 use Data::MessagePack;
 use Compress::LZ4;
 use Redis::Fast;
@@ -38,16 +39,17 @@ use feature qw/state/;
     sub _uncompress_lz4 { ${$_[1]} = Compress::LZ4::decompress(${$_[0]}) }
 }
 
-my $cache = Cache::Memcached::Fast::Safe->new({
-    servers => ['127.0.0.1:11211'],
-    namespace          => 'isucon6q:isuda:',
-    utf8               => 1,
-    serialize_methods  => [\&_message_pack, \&_message_unpack],
-    ketama_points      => 150,
-    hash_namespace     => 0,
-    compress_threshold => 5_000,
-    compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
-});
+my $cache = Cache::Memory::Simple->new();
+# my $cache = Cache::Memcached::Fast::Safe->new({
+#     servers => ['127.0.0.1:11211'],
+#     namespace          => 'isucon6q:isuda:',
+#     utf8               => 1,
+#     serialize_methods  => [\&_message_pack, \&_message_unpack],
+#     ketama_points      => 150,
+#     hash_namespace     => 0,
+#     compress_threshold => 5_000,
+#     compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
+# });
 
 {
     my %redis;

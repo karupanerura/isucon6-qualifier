@@ -197,6 +197,13 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     ], ($user_id, $keyword, $description) x 2);
     $cache->delete($CACHE_KEY_KEYWORDS);
     $cache->delete($CACHE_KEY_HTML . ":$keyword");
+    my $entries = $self->dbh->select_all(qq[
+        SELECT keyword FROM entry WHERE description LIKE "%$keyword%"
+    ]);
+
+    for my $entry (@$entries) {
+       $cache->delete($CACHE_KEY_HTML . ":$entry->{keyword}");
+    }
 
     $c->redirect('/');
 };

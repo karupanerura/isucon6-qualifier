@@ -13,6 +13,11 @@ use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
 use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
+use Cache::Memory::Simple;
+use feature qw/state/;
+
+state $cache = Cache::Memory::Simple->new();
+my $CACHE_KEY_KEYWORDS = 'keywords';
 
 sub config {
     state $conf = {
@@ -133,6 +138,11 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
 
+    my $last_insert_id = $self->dbh->query('select last_insert_id()');
+    if ($last_insert_id) {
+        $cache->delete($CACHE_KEY_KEYWORDS);
+    }
+
     $c->redirect('/');
 };
 
@@ -217,6 +227,7 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     my $keyword = $c->args->{keyword} or $c->halt(400);
     $c->req->parameters->{delete} or $c->halt(400);
 
+    # ここ cahce から引ける
     $c->halt(404) unless $self->dbh->select_row(qq[
         SELECT * FROM entry
         WHERE keyword = ?
@@ -226,15 +237,14 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
         DELETE FROM entry
         WHERE keyword = ?
     ], $keyword);
+    $cache->delete($CACHE_KEY_KEYWORDS);
     $c->redirect('/');
 };
 
 sub htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
-    my $keywords = $self->dbh->select_all(qq[
-        SELECT keyword FROM entry ORDER BY CHARACTER_LENGTH(keyword) DESC
-    ]);
+    my $keywords = $self->_get_sorted_keywords;
     my %kw2sha;
     my $re = join '|', map { quotemeta $_->{keyword} } @$keywords;
     $content =~ s{($re)}{
@@ -248,6 +258,18 @@ sub htmlify {
         $content =~ s/$hash/$link/g;
     }
     $content =~ s{\n}{<br \/>\n}gr;
+}
+
+sub _get_sorted_keywords {
+    my ($self) = @_;
+    return $cache->get_or_set(
+        $CACHE_KEY_KEYWORDS,
+        sub {
+            $self->dbh->select_all(qq[
+                SELECT keyword FROM entry ORDER BY CHARACTER_LENGTH(keyword) DESC
+            ]);
+        }
+    );
 }
 
 sub load_stars {

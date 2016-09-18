@@ -8,8 +8,8 @@
 - name: reload systemd
   shell: systemctl daemon-reload
 - name: stop perl (isutar)
-  service: name=isutar.perl state=restarted
+  service: name=isutar.perl state=stopped
 - name: disable perl (isutar)
   shell: systemctl disable isutar.perl.service
 - name: reload perl (isuda)
-  service: name=isuda.perl state=stopped
+  service: name=isuda.perl state=restarted

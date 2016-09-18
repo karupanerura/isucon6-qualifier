@@ -71,7 +71,7 @@ my $cache = Cache::Memcached::Fast::Safe->new({
 });
 
 my $pm = Parallel::Prefork->new({
-    max_workers  => 10,
+    max_workers  => 4,
     trap_signals => {
         TERM => 'TERM',
         HUP  => 'TERM',

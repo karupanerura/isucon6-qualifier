@@ -137,11 +137,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
-
-    my $last_insert_id = $self->dbh->query('select last_insert_id()');
-    if ($last_insert_id) {
-        $cache->delete($CACHE_KEY_KEYWORDS);
-    }
+    $cache->delete($CACHE_KEY_KEYWORDS);
 
     $c->redirect('/');
 };

@@ -410,8 +410,9 @@ sub select_stars_multi {
 sub total_entries {
     my ($self) = @_;
     my $count = $self->redis->get($REDIS_KEY_TOTAL_ENTRIES);
-    return if $count;
-    $count = $self->redis->set($REDIS_KEY_TOTAL_ENTRIES,  7100);
+    return $count if $count;
+    $count = 7100;
+    $self->redis->set($REDIS_KEY_TOTAL_ENTRIES, $count);
     return $count;
 }
 

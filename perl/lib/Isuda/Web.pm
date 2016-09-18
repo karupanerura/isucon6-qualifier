@@ -207,10 +207,10 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
     my ($self, $c) = @_;
     my $keyword = $c->args->{keyword} // $c->halt(400);
 
-    my $keywords = $self->_get_sorted_keywords;
-    unless (grep { $_->{keyword} eq $keyword } @$keywords) {
-        $c->halt(404);
-    }
+    my $entry = $self->dbh->select_row(qq[
+        SELECT * FROM entry
+        WHERE keyword = ?
+    ], $keyword);
     $c->halt(404) unless $entry;
     $entry->{html} = $self->htmlify($c, $entry->{description});
     $entry->{stars} = $self->load_stars($entry->{keyword});

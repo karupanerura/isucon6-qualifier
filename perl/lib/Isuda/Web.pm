@@ -20,7 +20,7 @@ use Redis::Fast;
 use feature qw/state/;
 
 BEGIN {
-    if (1) {
+    if (0) {
         use Devel::KYTProf;
         Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
         Devel::KYTProf->add_prof(__PACKAGE__, 'load_stars');

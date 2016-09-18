@@ -124,13 +124,22 @@ get '/' => [qw/set_name/] => sub {
     my $PER_PAGE = 10;
     my $page = $c->req->parameters->{page} || 1;
 
-    my $entries = $self->dbh->select_all(qq[
-        SELECT * FROM entry
+    my $records = $self->dbh->select_all(qq[
+        SELECT id FROM entry
         ORDER BY updated_at DESC
         LIMIT $PER_PAGE
         OFFSET @{[ $PER_PAGE * ($page-1) ]}
     ]);
-    foreach my $entry (@$entries) {
+    my $ids = [map { $_->{id} } @$records];
+
+    my $entries = $self->dbh->select_all(qq[
+        SELECT id, keyword, description FROM entry WHERE id in (?)
+    ], $ids);
+    my @entries;
+    for my $id (@$ids) {
+        push @entries, grep { $_->{id} == $id } @$entries;
+    }
+    for my $entry (@entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
         $entry->{stars} = $self->load_stars($entry->{keyword});
     }
@@ -141,7 +150,7 @@ get '/' => [qw/set_name/] => sub {
     my $last_page = ceil($total_entries / $PER_PAGE);
     my @pages = (max(1, $page-5)..min($last_page, $page+5));
 
-    $c->render('index.tx', { entries => $entries, page => $page, last_page => $last_page, pages => \@pages });
+    $c->render('index.tx', { entries => \@entries, page => $page, last_page => $last_page, pages => \@pages });
 };
 
 get 'robots.txt' => sub {

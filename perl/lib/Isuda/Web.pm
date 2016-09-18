@@ -233,7 +233,7 @@ sub htmlify {
     my ($self, $c, $content) = @_;
     return '' unless defined $content;
     my $keywords = $self->dbh->select_all(qq[
-        SELECT * FROM entry ORDER BY CHARACTER_LENGTH(keyword) DESC
+        SELECT keyword FROM entry ORDER BY CHARACTER_LENGTH(keyword) DESC
     ]);
     my %kw2sha;
     my $re = join '|', map { quotemeta $_->{keyword} } @$keywords;

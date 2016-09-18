@@ -19,6 +19,17 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
+BEGIN {
+    if (1) {
+        use Devel::KYTProf;
+        Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'load_stars');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'register');
+    }
+}
+
 {
     my $msgpack = Data::MessagePack->new->utf8;
     sub _message_pack   { $msgpack->pack(@_)   }

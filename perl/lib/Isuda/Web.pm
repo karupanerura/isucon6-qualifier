@@ -178,6 +178,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
     $cache->delete($CACHE_KEY_KEYWORDS);
+    $cache->delete($CACHE_KEY_HTML . ":$keyword");
 
     $c->redirect('/');
 };
@@ -273,6 +274,7 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
         WHERE keyword = ?
     ], $keyword);
     $cache->delete($CACHE_KEY_KEYWORDS);
+    $cache->delete($CACHE_KEY_HTML . ":$keyword");
     $c->redirect('/');
 };
 

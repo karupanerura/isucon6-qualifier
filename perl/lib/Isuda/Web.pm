@@ -296,15 +296,10 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
         DELETE FROM entry
         WHERE keyword = ?
     ], $keyword);
-<<<<<<< HEAD
     $cache->delete_multi($CACHE_KEY_KEYWORDS, $CACHE_KEY_HTML . ":$keyword");
-=======
-    $cache->delete($CACHE_KEY_KEYWORDS);
-    $cache->delete($CACHE_KEY_HTML . ":$keyword");
 
     $self->redis->decr($REDIS_KEY_TOTAL_ENTRIES);
 
->>>>>>> master
     $c->redirect('/');
 };
 

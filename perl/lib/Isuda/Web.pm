@@ -7,7 +7,7 @@ use DBIx::Sunny;
 use Encode qw/encode_utf8/;
 use POSIX qw/ceil/;
 use Furl;
-use JSON::XS qw/decode_json/;
+use JSON::XS qw/decode_json encode_json/;
 use String::Random qw/random_string/;
 use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
@@ -19,15 +19,15 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
-BEGIN {
-    if (0) {
-        use Devel::KYTProf;
-        Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'register');
-    }
-}
+# BEGIN {
+#     if (0) {
+#         use Devel::KYTProf;
+#         Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'register');
+#     }
+# }
 
 {
     my $msgpack = Data::MessagePack->new->utf8;
@@ -58,6 +58,7 @@ my $cache = Cache::Memcached::Fast::Safe->new({
 
 my $CACHE_KEY_KEYWORDS = 'keywords';
 my $CACHE_KEY_HTML     = 'html';
+my $REDIS_KEY_TOTAL_ENTRIES = 'total_entries';
 
 sub config {
     state $conf = {
@@ -122,6 +123,7 @@ get '/initialize' => sub {
     ]);
     $cache->delete($CACHE_KEY_KEYWORDS);
     $self->dbh->query('TRUNCATE star');
+    $self->total_entries; # init / set default 7100
 
     $c->render_json({
         result => 'ok',
@@ -161,9 +163,7 @@ get '/' => [qw/set_name/] => sub {
         $entry->{stars} = $stars->{$id};
     }
 
-    my $total_entries = $self->dbh->select_one(q[
-        SELECT COUNT(*) FROM entry
-    ]);
+    my $total_entries = $self->total_entries;
     my $last_page = ceil($total_entries / $PER_PAGE);
     my @pages = (max(1, $page-5)..min($last_page, $page+5));
 
@@ -196,14 +196,14 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
 
     $cache->delete($CACHE_KEY_HTML . ":$keyword");
 
-    my $last_insert_id = $self->dbh->last_insert_id;
-    # inesrt
-    if ($last_insert_id) {
+    if ($self->dbh->last_insert_id) {
+        $self->redis->incr($REDIS_KEY_TOTAL_ENTRIES);
         $cache->delete($CACHE_KEY_KEYWORDS);
-        my $entries = $self->dbh->select_all(qq[
-           SELECT keyword FROM entry WHERE description LIKE "%$keyword%"
-        ]);
 
+        my $entries = $self->dbh->select_all(qq[
+            SELECT keyword FROM entry WHERE description LIKE "%$keyword%"
+        ]);
+        
         my @cache_keys;
         for my $entry (@$entries) {
             push @cache_keys, $CACHE_KEY_HTML . ":$entry->{keyword}";
@@ -305,6 +305,9 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     ], $keyword);
     $cache->delete($CACHE_KEY_KEYWORDS);
     $cache->delete($CACHE_KEY_HTML . ":$keyword");
+
+    $self->redis->decr($REDIS_KEY_TOTAL_ENTRIES);
+
     $c->redirect('/');
 };
 
@@ -405,6 +408,15 @@ sub select_stars_multi {
     $sth->finish;
 
     return \%stars;
+}
+
+sub total_entries {
+    my ($self) = @_;
+    my $count = $self->redis->get($REDIS_KEY_TOTAL_ENTRIES);
+    return $count if $count;
+    $count = 7100;
+    $self->redis->set($REDIS_KEY_TOTAL_ENTRIES, $count);
+    return $count;
 }
 
 1;

@@ -5,3 +5,5 @@ CREATE TABLE `star` (
   `created_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+ALTER TABLE `star` ADD INDEX keyword_idx(`keyword`);

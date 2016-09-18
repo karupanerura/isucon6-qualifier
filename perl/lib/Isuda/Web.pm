@@ -52,15 +52,6 @@ my $cache = Cache::Memory::Simple->new();
 #     compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
 # });
 
-__PACKAGE__->_get_sorted_keywords();
-my $entries = __PACKAGE__->dbh->select_all(qq[
-    select keyword, description from entry where id < 7101
-]);
-for my $e (@$entries) {
-    __PACKAGE__->htmlify($e->{description});
-}
-
-
 {
     my %redis;
     sub redis {
@@ -72,6 +63,14 @@ for my $e (@$entries) {
 my $CACHE_KEY_KEYWORDS = 'keywords';
 my $CACHE_KEY_HTML     = 'html';
 my $REDIS_KEY_TOTAL_ENTRIES = 'total_entries';
+
+__PACKAGE__->_get_sorted_keywords();
+my $entries = __PACKAGE__->dbh->select_all(qq[
+    select keyword, description from entry where id < 7101
+]);
+for my $e (@$entries) {
+    __PACKAGE__->htmlify($e->{description});
+}
 
 sub config {
     state $conf = {

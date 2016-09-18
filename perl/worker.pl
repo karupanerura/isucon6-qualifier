@@ -9,6 +9,7 @@ use DBIx::Sunny;
 use Cache::Memcached::Fast::Safe;
 use Data::MessagePack;
 use Compress::LZ4;
+use Time::HiRes qw/sleep/;
 
 my $CACHE_KEY_KEYWORDS = 'keywords';
 my $CACHE_KEY_HTML     = 'html';
@@ -87,6 +88,9 @@ while ($pm->signal_received ne 'TERM') {
             if (my $code = __PACKAGE__->can("job_$payload->{func}")) {
                 $code->(@{ $payload->{args} });
             }
+        }
+        else {
+            sleep 0.1;
         }
     });
 }

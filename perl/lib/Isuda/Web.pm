@@ -19,6 +19,17 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
+BEGIN {
+    if (1) {
+        use Devel::KYTProf;
+        Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'load_stars');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
+        Devel::KYTProf->add_prof(__PACKAGE__, 'register');
+    }
+}
+
 {
     my $msgpack = Data::MessagePack->new->utf8;
     sub _message_pack   { $msgpack->pack(@_)   }
@@ -145,6 +156,13 @@ get '/' => [qw/set_name/] => sub {
         $entry->{stars} = $self->load_stars($entry->{keyword});
     }
 
+    my %kw2ent = map { $_->{keyword} => $_ } @$entries;
+    my $stars = $self->load_stars([keys %kw2ent]);
+    for my $keyword (keys %$stars) {
+        my $entry = $kw2ent{$keyword};
+        $entry->{stars} = $stars->{$keyword};
+    }
+
     my $total_entries = $self->dbh->select_one(q[
         SELECT COUNT(*) FROM entry
     ]);
@@ -168,7 +186,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $user_id = $c->stash->{user_id};
     my $description = $c->req->parameters->{description};
 
-    if (is_spam_contents($description) || is_spam_contents($keyword)) {
+    if (is_spam_contents($description.' '.$keyword)) {
         $c->halt(400, 'SPAM!');
     }
     $self->dbh->query(q[

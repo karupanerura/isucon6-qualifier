@@ -197,7 +197,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     $cache->delete_multi($CACHE_KEY_KEYWORDS, $CACHE_KEY_HTML . ":$keyword");
 
     if ($self->dbh->last_insert_id) {
-        redis()->publish('queue', _message_pack({
+        redis()->rpush('queue', _message_pack({
             func => 'delete_releated_caches',
             args => [$keyword],
         }));

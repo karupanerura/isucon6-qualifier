@@ -81,8 +81,8 @@ my $pm = Parallel::Prefork->new({
 
 while ($pm->signal_received ne 'TERM') {
     $pm->start(sub {
-        redis()->subscribe('queue', sub {
-            my ($msg) = @_;
+        my $msg = redis()->rpop('queue');
+        if ($msg) {
             my $payload = _message_unpack($msg);
             if (my $code = __PACKAGE__->can("job_$payload->{func}")) {
                 $code->(@{ $payload->{args} });

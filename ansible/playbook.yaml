@@ -17,8 +17,8 @@
       tags: nginx
     - include: tasks/07_mysql.yaml
       tags: mysql
-    - include: tasks/08_supervisor.yaml
-      tags: supervisor
+    # - include: tasks/08_supervisor.yaml
+    #   tags: supervisor
     - include: tasks/09_memcached.yaml
       tags: memcached
     - include: tasks/10_mackerel.yaml

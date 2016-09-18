@@ -1,6 +1,6 @@
 ---
 
 - name: setup nginx conf
-  copy: src=nginx.conf dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
+  copy: src=config/nginx.conf dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
 - name: reload nginx
   service: name=nginx state=restarted

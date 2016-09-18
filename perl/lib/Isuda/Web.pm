@@ -193,15 +193,12 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
-    $cache->delete($CACHE_KEY_KEYWORDS);
-    $cache->delete($CACHE_KEY_HTML . ":$keyword");
-    my $entries = $self->dbh->select_all(qq[
-        SELECT keyword FROM entry WHERE description LIKE "%$keyword%"
-    ]);
+    $cache->delete_multi($CACHE_KEY_KEYWORDS, $CACHE_KEY_HTML . ":$keyword");
 
-    for my $entry (@$entries) {
-       $cache->delete($CACHE_KEY_HTML . ":$entry->{keyword}");
-    }
+    redis()->publish('queue', _message_pack({
+        func => 'delete_releated_caches',
+        args => [$keyword],
+    }));
 
     $c->redirect('/');
 };
@@ -296,8 +293,7 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
         DELETE FROM entry
         WHERE keyword = ?
     ], $keyword);
-    $cache->delete($CACHE_KEY_KEYWORDS);
-    $cache->delete($CACHE_KEY_HTML . ":$keyword");
+    $cache->delete_multi($CACHE_KEY_KEYWORDS, $CACHE_KEY_HTML . ":$keyword");
     $c->redirect('/');
 };
 

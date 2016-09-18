@@ -21,6 +21,7 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
+
 # BEGIN {
 #     if (0) {
 #         use Devel::KYTProf;
@@ -63,6 +64,14 @@ my $CACHE_KEY_KEYWORDS = 'keywords';
 my $CACHE_KEY_HTML     = 'html';
 my $REDIS_KEY_TOTAL_ENTRIES = 'total_entries';
 
+__PACKAGE__->_get_sorted_keywords();
+my $entries = __PACKAGE__->dbh->select_all(qq[
+    select keyword, description from entry where id < 7101
+]);
+for my $e (@$entries) {
+    __PACKAGE__->htmlify($e->{description});
+}
+
 sub config {
     state $conf = {
         dsn           => $ENV{ISUDA_DSN}         // 'dbi:mysql:db=isuda',
@@ -81,6 +90,18 @@ sub config {
 
 sub dbh {
     my ($self) = @_;
+    if (ref $self ne 'HASH') {
+        return DBIx::Sunny->connect(config('dsn'), config('db_user'), config('db_password'), {
+            Callbacks => {
+                connected => sub {
+                    my $dbh = shift;
+                    $dbh->do(q[SET SESSION sql_mode='TRADITIONAL,NO_AUTO_VALUE_ON_ZERO,ONLY_FULL_GROUP_BY']);
+                    $dbh->do('SET NAMES utf8mb4');
+                    return;
+                },
+            },
+        });
+    }
     return $self->{dbh} //= DBIx::Sunny->connect(config('dsn'), config('db_user'), config('db_password'), {
         Callbacks => {
             connected => sub {

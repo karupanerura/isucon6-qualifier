@@ -23,3 +23,5 @@
       tags: memcached
     - include: tasks/10_mackerel.yaml
       tags: mackerel
+    - include: tasks/11_perl.yaml
+      tags: perl

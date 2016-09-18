@@ -7,11 +7,12 @@ use DBIx::Sunny;
 use Encode qw/encode_utf8/;
 use POSIX qw/ceil/;
 use Furl;
-use JSON::XS qw/decode_json/;
+use JSON::XS qw/decode_json encode_json/;
 use String::Random qw/random_string/;
 use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
-use Text::Xslate::Util qw/html_escape/;
+use HTML::Escape qw/escape_html/;
+# use Text::Xslate::Util qw/html_escape/;
 use List::Util qw/min max/;
 use Cache::Memcached::Fast::Safe;
 use Data::MessagePack;
@@ -19,15 +20,15 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
-BEGIN {
-    if (0) {
-        use Devel::KYTProf;
-        Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'register');
-    }
-}
+# BEGIN {
+#     if (0) {
+#         use Devel::KYTProf;
+#         Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'register');
+#     }
+# }
 
 {
     my $msgpack = Data::MessagePack->new->utf8;
@@ -58,6 +59,7 @@ my $cache = Cache::Memcached::Fast::Safe->new({
 
 my $CACHE_KEY_KEYWORDS = 'keywords';
 my $CACHE_KEY_HTML     = 'html';
+my $REDIS_KEY_TOTAL_ENTRIES = 'total_entries';
 
 sub config {
     state $conf = {
@@ -122,6 +124,7 @@ get '/initialize' => sub {
     ]);
     $cache->delete($CACHE_KEY_KEYWORDS);
     $self->dbh->query('TRUNCATE star');
+    $self->total_entries; # init / set default 7100
 
     $c->render_json({
         result => 'ok',
@@ -161,9 +164,7 @@ get '/' => [qw/set_name/] => sub {
         $entry->{stars} = $stars->{$id};
     }
 
-    my $total_entries = $self->dbh->select_one(q[
-        SELECT COUNT(*) FROM entry
-    ]);
+    my $total_entries = $self->total_entries;
     my $last_page = ceil($total_entries / $PER_PAGE);
     my @pages = (max(1, $page-5)..min($last_page, $page+5));
 
@@ -195,10 +196,12 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     ], ($user_id, $keyword, $description) x 2);
     $cache->delete_multi($CACHE_KEY_KEYWORDS, $CACHE_KEY_HTML . ":$keyword");
 
-    redis()->publish('queue', _message_pack({
-        func => 'delete_releated_caches',
-        args => [$keyword],
-    }));
+    if ($self->dbh->last_insert_id) {
+        redis()->publish('queue', _message_pack({
+            func => 'delete_releated_caches',
+            args => [$keyword],
+        }));
+    }
 
     $c->redirect('/');
 };
@@ -293,7 +296,15 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
         DELETE FROM entry
         WHERE keyword = ?
     ], $keyword);
+<<<<<<< HEAD
     $cache->delete_multi($CACHE_KEY_KEYWORDS, $CACHE_KEY_HTML . ":$keyword");
+=======
+    $cache->delete($CACHE_KEY_KEYWORDS);
+    $cache->delete($CACHE_KEY_HTML . ":$keyword");
+
+    $self->redis->decr($REDIS_KEY_TOTAL_ENTRIES);
+
+>>>>>>> master
     $c->redirect('/');
 };
 
@@ -336,10 +347,10 @@ sub _htmlify {
         my $kw = $1;
         $kw2sha{$kw} = "isuda_" . sha1_hex(encode_utf8($kw));
     }eg;
-    $content = html_escape($content);
+    $content = escape_html($content);
     while (my ($kw, $hash) = each %kw2sha) {
         my $url = $c->req->uri_for('/keyword/' . uri_escape_utf8($kw));
-        my $link = sprintf '<a href="%s">%s</a>', $url, html_escape($kw);
+        my $link = sprintf '<a href="%s">%s</a>', $url, escape_html($kw);
         $content =~ s/$hash/$link/g;
     }
     $content =~ s{\n}{<br \/>\n}gr;
@@ -394,6 +405,15 @@ sub select_stars_multi {
     $sth->finish;
 
     return \%stars;
+}
+
+sub total_entries {
+    my ($self) = @_;
+    my $count = $self->redis->get($REDIS_KEY_TOTAL_ENTRIES);
+    return $count if $count;
+    $count = 7100;
+    $self->redis->set($REDIS_KEY_TOTAL_ENTRIES, $count);
+    return $count;
 }
 
 1;

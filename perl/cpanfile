@@ -10,6 +10,7 @@ requires 'Plack::Middleware::Session';
 requires 'Gazelle';
 requires 'String::Random';
 requires 'URI::Escape';
+requires 'HTML::Escape';
 requires 'Cache::Memory::Simple';
 requires 'Cache::Memcached::Fast::Safe';
 requires 'Data::MessagePack';

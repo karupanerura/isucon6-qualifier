@@ -16,8 +16,8 @@ my $CACHE_KEY_HTML     = 'html';
 sub config {
     state $conf = {
         dsn           => $ENV{ISUDA_DSN}         // 'dbi:mysql:db=isuda',
-        db_user       => $ENV{ISUDA_DB_USER}     // 'root',
-        db_password   => $ENV{ISUDA_DB_PASSWORD} // '',
+        db_user       => $ENV{ISUDA_DB_USER}     // 'isucon',
+        db_password   => $ENV{ISUDA_DB_PASSWORD} // 'isucon',
         isutar_origin => $ENV{ISUTAR_ORIGIN}     // 'http://localhost:5001',
         isupam_origin => $ENV{ISUPAM_ORIGIN}     // 'http://localhost:5050',
     };
@@ -46,7 +46,7 @@ sub dbh {
 {
     my %redis;
     sub redis {
-        $redis{$$} //= Redis::Fast->new(server => '127.0.0.1:6379');
+        $redis{$$} //= Redis::Fast->new(server => '127.0.0.1:6379', reconnect => 1);
     }
     __PACKAGE__->redis;
 }
@@ -87,7 +87,7 @@ while ($pm->signal_received ne 'TERM') {
             if (my $code = __PACKAGE__->can("job_$payload->{func}")) {
                 $code->(@{ $payload->{args} });
             }
-        });
+        }
     });
 }
 $pm->wait_all_children();
@@ -97,5 +97,5 @@ sub job_delete_releated_caches {
     my $entries = dbh()->select_all(q[SELECT keyword FROM entry WHERE description LIKE ?], "%$keyword%");
 
     my @keys = map { $CACHE_KEY_HTML . ":$_->{keyword}" } @$entries;
-    $cache->delete_multi(\@keys);
+    $cache->delete_multi(@keys);
 }

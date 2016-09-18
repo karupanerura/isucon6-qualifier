@@ -422,4 +422,18 @@ sub total_entries {
     return $count;
 }
 
+get '/attame' => sub {
+    my ($self, $c) = @_;
+    my $keys = $self->_get_sorted_keywords;
+    my $entries = $self->dbh->select_all(qq[
+        select keyword, description from entry
+    ]);
+    for my $e (@$entries) {
+        $self->htmlify($e->{description});
+    }
+    $c->render_json({
+        result => 'ok',
+    });
+}
+
 1;

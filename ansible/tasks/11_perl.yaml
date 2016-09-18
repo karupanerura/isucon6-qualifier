@@ -5,11 +5,16 @@
   with_items:
     - isuda
     - isutar
+    - isuwa
 - name: reload systemd
   shell: systemctl daemon-reload
 - name: stop perl (isutar)
   service: name=isutar.perl state=stopped
 - name: disable perl (isutar)
   shell: systemctl disable isutar.perl.service
+- name: enable perl (isuwa)
+  shell: systemctl enable isuwa.perl.service
 - name: reload perl (isuda)
   service: name=isuda.perl state=restarted
+- name: reload perl (isuwa)
+  service: name=isuwa.perl state=restarted

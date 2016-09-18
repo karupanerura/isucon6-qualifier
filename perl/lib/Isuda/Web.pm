@@ -97,7 +97,6 @@ get '/' => [qw/set_name/] => sub {
     ]);
     my $ids = [map { $_->{id} } @$records];
 
-    # TODO: cache してもいいかも
     my $entries = $self->dbh->select_all(qq[
         SELECT id, keyword, description FROM entry WHERE id in (?)
     ], $ids);
@@ -116,7 +115,7 @@ get '/' => [qw/set_name/] => sub {
     my $last_page = ceil($total_entries / $PER_PAGE);
     my @pages = (max(1, $page-5)..min($last_page, $page+5));
 
-    $c->render('index.tx', { entries => $entries, page => $page, last_page => $last_page, pages => \@pages });
+    $c->render('index.tx', { entries => \@entries, page => $page, last_page => $last_page, pages => \@pages });
 };
 
 get 'robots.txt' => sub {

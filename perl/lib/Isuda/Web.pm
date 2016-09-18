@@ -129,7 +129,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $user_id = $c->stash->{user_id};
     my $description = $c->req->parameters->{description};
 
-    if (is_spam_contents($description) || is_spam_contents($keyword)) {
+    if (is_spam_contents($description.' '.$keyword)) {
         $c->halt(400, 'SPAM!');
     }
     $self->dbh->query(q[

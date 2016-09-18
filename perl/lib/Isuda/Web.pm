@@ -193,11 +193,8 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
         ON DUPLICATE KEY UPDATE
         author_id = ?, keyword = ?, description = ?, updated_at = NOW()
     ], ($user_id, $keyword, $description) x 2);
-    $cache->delete($CACHE_KEY_KEYWORDS);
+
     $cache->delete($CACHE_KEY_HTML . ":$keyword");
-    my $entries = $self->dbh->select_all(qq[
-        SELECT keyword FROM entry WHERE description LIKE "%$keyword%"
-    ]);
 
     for my $entry (@$entries) {
         $cache->delete($CACHE_KEY_HTML . ":$entry->{keyword}");
@@ -206,7 +203,6 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     if ($self->dbh->last_insert_id) {
         $self->redis->incr($REDIS_KEY_TOTAL_ENTRIES);
     }
-
     $c->redirect('/');
 };
 

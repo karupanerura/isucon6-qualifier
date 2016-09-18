@@ -141,7 +141,13 @@ get '/' => [qw/set_name/] => sub {
     }
     for my $entry (@entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{description});
-        $entry->{stars} = $self->load_stars($entry->{keyword});
+    }
+
+    my %kw2ent = map { $_->{keyword} => $_ } @$entries;
+    my $stars = $self->load_stars([keys %kw2ent]);
+    for my $keyword (keys %$stars) {
+        my $entry = $kw2ent{$keyword};
+        $entry->{stars} = $stars->{$keyword};
     }
 
     my $total_entries = $self->dbh->select_one(q[
@@ -167,7 +173,7 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     my $user_id = $c->stash->{user_id};
     my $description = $c->req->parameters->{description};
 
-    if (is_spam_contents($description) || is_spam_contents($keyword)) {
+    if (is_spam_contents($description.' '.$keyword)) {
         $c->halt(400, 'SPAM!');
     }
     $self->dbh->query(q[

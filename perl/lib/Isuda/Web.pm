@@ -7,7 +7,7 @@ use DBIx::Sunny;
 use Encode qw/encode_utf8/;
 use POSIX qw/ceil/;
 use Furl;
-use JSON::XS qw/decode_json/;
+use JSON::XS qw/decode_json encode_json/;
 use String::Random qw/random_string/;
 use Digest::SHA1 qw/sha1_hex/;
 use URI::Escape qw/uri_escape_utf8/;
@@ -19,15 +19,15 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
-BEGIN {
-    if (0) {
-        use Devel::KYTProf;
-        Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'register');
-    }
-}
+# BEGIN {
+#     if (0) {
+#         use Devel::KYTProf;
+#         Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
+#         Devel::KYTProf->add_prof(__PACKAGE__, 'register');
+#     }
+# }
 
 {
     my $msgpack = Data::MessagePack->new->utf8;

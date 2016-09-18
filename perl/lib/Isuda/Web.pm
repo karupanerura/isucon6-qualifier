@@ -58,6 +58,7 @@ my $cache = Cache::Memcached::Fast::Safe->new({
 
 my $CACHE_KEY_KEYWORDS = 'keywords';
 my $CACHE_KEY_HTML     = 'html';
+my $REDIS_KEY_TOTAL_ENTRIES = 'total_entries';
 
 sub config {
     state $conf = {
@@ -122,6 +123,7 @@ get '/initialize' => sub {
     ]);
     $cache->delete($CACHE_KEY_KEYWORDS);
     $self->dbh->query('TRUNCATE star');
+    $self->total_entries; # init / set default 7100
 
     $c->render_json({
         result => 'ok',
@@ -161,9 +163,7 @@ get '/' => [qw/set_name/] => sub {
         $entry->{stars} = $stars->{$id};
     }
 
-    my $total_entries = $self->dbh->select_one(q[
-        SELECT COUNT(*) FROM entry
-    ]);
+    my $total_entries = $self->total_entries;
     my $last_page = ceil($total_entries / $PER_PAGE);
     my @pages = (max(1, $page-5)..min($last_page, $page+5));
 
@@ -200,7 +200,11 @@ post '/keyword' => [qw/set_name authenticate/] => sub {
     ]);
 
     for my $entry (@$entries) {
-       $cache->delete($CACHE_KEY_HTML . ":$entry->{keyword}");
+        $cache->delete($CACHE_KEY_HTML . ":$entry->{keyword}");
+    }
+
+    if ($self->dbh->last_insert_id) {
+        $self->redis->incr($REDIS_KEY_TOTAL_ENTRIES);
     }
 
     $c->redirect('/');
@@ -298,6 +302,9 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     ], $keyword);
     $cache->delete($CACHE_KEY_KEYWORDS);
     $cache->delete($CACHE_KEY_HTML . ":$keyword");
+
+    $self->redis->decr($REDIS_KEY_TOTAL_ENTRIES);
+
     $c->redirect('/');
 };
 
@@ -398,6 +405,14 @@ sub select_stars_multi {
     $sth->finish;
 
     return \%stars;
+}
+
+sub total_entries {
+    my ($self) = @_;
+    my $count = $self->redis->get($REDIS_KEY_TOTAL_ENTRIES);
+    return if $count;
+    $count = $self->redis->set($REDIS_KEY_TOTAL_ENTRIES,  7100);
+    return $count;
 }
 
 1;

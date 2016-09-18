@@ -10,6 +10,24 @@ DISTRIBUTIONS
       POSIX::strftime::Compiler 0.30
       Time::Local 0
       perl 5.008001
+  Cache-Memcached-Fast-0.23
+    pathname: K/KR/KROKI/Cache-Memcached-Fast-0.23.tar.gz
+    provides:
+      Cache::Memcached::Fast 0.23
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+  Cache-Memcached-Fast-Safe-0.05
+    pathname: K/KA/KAZEBURO/Cache-Memcached-Fast-Safe-0.05.tar.gz
+    provides:
+      Cache::Memcached::Fast::Safe 0.05
+    requirements:
+      Cache::Memcached::Fast 0.23
+      Digest::SHA 0
+      Module::Build 0.38
+      POSIX::AtFork 0.02
+      URI::Escape::XS 0.09
+      parent 0
   Cache-Memory-Simple-1.03
     pathname: T/TO/TOKUHIROM/Cache-Memory-Simple-1.03.tar.gz
     provides:
@@ -51,6 +69,15 @@ DISTRIBUTIONS
       File::Spec 0.80
       Test::More 0.47
       perl 5.006
+  Compress-LZ4-0.23
+    pathname: G/GR/GRAY/Compress-LZ4-0.23.tar.gz
+    provides:
+      Compress::LZ4 0.23
+    requirements:
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      Test::More 0.82
+      XSLoader 0
   Cookie-Baker-0.06
     pathname: K/KA/KAZEBURO/Cookie-Baker-0.06.tar.gz
     provides:
@@ -259,6 +286,18 @@ DISTRIBUTIONS
       Test::Requires 0
       parent 0
       perl 5.008001
+  Devel-KYTProf-0.05
+    pathname: O/ON/ONISHI/Devel-KYTProf-0.05.tar.gz
+    provides:
+      Devel::KYTProf 0.05
+      Devel::KYTProf::Logger::LTSV undef
+    requirements:
+      Class::Data::Inheritable 0
+      ExtUtils::MakeMaker 6.36
+      Term::ANSIColor 0
+      Test::More 0.94
+      Time::HiRes 0
+      UNIVERSAL::require 0
   Devel-StackTrace-2.01
     pathname: D/DR/DROLSKY/Devel-StackTrace-2.01.tar.gz
     provides:
@@ -400,6 +439,13 @@ DISTRIBUTIONS
       perl 5.008
       strict 0
       warnings 0
+  File-Which-1.21
+    pathname: P/PL/PLICEASE/File-Which-1.21.tar.gz
+    provides:
+      File::Which 1.21
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.006
   Filesys-Notify-Simple-0.12
     pathname: M/MI/MIYAGAWA/Filesys-Notify-Simple-0.12.tar.gz
     provides:
@@ -869,6 +915,18 @@ DISTRIBUTIONS
       Carp 0
       ExtUtils::MakeMaker 0
       POSIX 0
+  POSIX-AtFork-0.02
+    pathname: G/GF/GFUJI/POSIX-AtFork-0.02.tar.gz
+    provides:
+      POSIX::AtFork 0.02
+    requirements:
+      Devel::PPPort 3.19
+      ExtUtils::MakeMaker 6.42
+      ExtUtils::ParseXS 2.21
+      Test::More 0.88
+      Test::SharedFork 0
+      XSLoader 0.1
+      perl 5.008001
   POSIX-strftime-Compiler-0.42
     pathname: K/KA/KAZEBURO/POSIX-strftime-Compiler-0.42.tar.gz
     provides:
@@ -1032,6 +1090,17 @@ DISTRIBUTIONS
       Proc::Wait3 0.05
     requirements:
       ExtUtils::MakeMaker 0
+  Redis-Fast-0.18
+    pathname: S/SH/SHOGO/Redis-Fast-0.18.tar.gz
+    provides:
+      Redis::Fast 0.18
+      Redis::Fast::Hash undef
+      Redis::Fast::List undef
+      Redis::Fast::Sentinel undef
+    requirements:
+      ExtUtils::CBuilder 0
+      Module::Build 0.4005
+      Module::Build::XSUtil 0.16
   Router-Boom-1.03
     pathname: T/TO/TOKUHIROM/Router-Boom-1.03.tar.gz
     provides:
@@ -1275,6 +1344,17 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       common::sense 0
+  UNIVERSAL-require-0.18
+    pathname: N/NE/NEILB/UNIVERSAL-require-0.18.tar.gz
+    provides:
+      UNIVERSAL::require 0.18
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 0
+      Test::More 0.47
+      perl 5.006
+      strict 0
+      warnings 0
   URI-1.71
     pathname: E/ET/ETHER/URI-1.71.tar.gz
     provides:
@@ -1339,6 +1419,13 @@ DISTRIBUTIONS
       parent 0
       perl 5.008001
       utf8 0
+  URI-Escape-XS-0.14
+    pathname: D/DA/DANKOGAI/URI-Escape-XS-0.14.tar.gz
+    provides:
+      URI::Escape::XS 0.14
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
   WWW-Form-UrlEncoded-0.23
     pathname: K/KA/KAZEBURO/WWW-Form-UrlEncoded-0.23.tar.gz
     provides:

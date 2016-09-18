@@ -10,6 +10,19 @@ DISTRIBUTIONS
       POSIX::strftime::Compiler 0.30
       Time::Local 0
       perl 5.008001
+  Cache-Memory-Simple-1.03
+    pathname: T/TO/TOKUHIROM/Cache-Memory-Simple-1.03.tar.gz
+    provides:
+      Cache::Memory::Simple 1.03
+      Cache::Memory::Simple::Scalar undef
+    requirements:
+      CPAN::Meta 0
+      CPAN::Meta::Prereqs 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.38
+      Time::HiRes 0
+      parent 0
+      perl 5.008001
   Canary-Stability-2011
     pathname: M/ML/MLEHMANN/Canary-Stability-2011.tar.gz
     provides:
@@ -311,13 +324,13 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.30
       strict 0
       warnings 0
-  ExtUtils-Helpers-0.025
-    pathname: L/LE/LEONT/ExtUtils-Helpers-0.025.tar.gz
+  ExtUtils-Helpers-0.026
+    pathname: L/LE/LEONT/ExtUtils-Helpers-0.026.tar.gz
     provides:
-      ExtUtils::Helpers 0.025
-      ExtUtils::Helpers::Unix 0.025
-      ExtUtils::Helpers::VMS 0.025
-      ExtUtils::Helpers::Windows 0.025
+      ExtUtils::Helpers 0.026
+      ExtUtils::Helpers::Unix 0.026
+      ExtUtils::Helpers::VMS 0.026
+      ExtUtils::Helpers::Windows 0.026
     requirements:
       Carp 0
       Exporter 5.57
@@ -1096,10 +1109,10 @@ DISTRIBUTIONS
       strict 0
       vars 0
       warnings 0
-  Test-Deep-1.120
-    pathname: R/RJ/RJBS/Test-Deep-1.120.tar.gz
+  Test-Deep-1.123
+    pathname: R/RJ/RJBS/Test-Deep-1.123.tar.gz
     provides:
-      Test::Deep 1.120
+      Test::Deep 1.123
       Test::Deep::All undef
       Test::Deep::Any undef
       Test::Deep::Array undef

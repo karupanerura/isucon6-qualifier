@@ -21,6 +21,14 @@ use Compress::LZ4;
 use Redis::Fast;
 use feature qw/state/;
 
+__PACKAGE__->_get_sorted_keywords();
+__PACKAGE__->dbh->select_all(qq[
+    select keyword, description from entry
+]);
+for my $e (@$entries) {
+    __PACKAGE__->htmlify($e->{description});
+}
+
 # BEGIN {
 #     if (0) {
 #         use Devel::KYTProf;
@@ -420,20 +428,6 @@ sub total_entries {
     $count = 7100;
     $self->redis->set($REDIS_KEY_TOTAL_ENTRIES, $count);
     return $count;
-}
-
-get '/attame' => sub {
-    my ($self, $c) = @_;
-    my $keys = $self->_get_sorted_keywords;
-    my $entries = $self->dbh->select_all(qq[
-        select keyword, description from entry
-    ]);
-    for my $e (@$entries) {
-        $self->htmlify($e->{description});
-    }
-    $c->render_json({
-        result => 'ok',
-    });
 }
 
 1;

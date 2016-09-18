@@ -211,10 +211,10 @@ get '/keyword/:keyword' => [qw/set_name/] => sub {
     my ($self, $c) = @_;
     my $keyword = $c->args->{keyword} // $c->halt(400);
 
-    my $entry = $self->dbh->select_row(qq[
-        SELECT * FROM entry
-        WHERE keyword = ?
-    ], $keyword);
+    my $keywords = $self->_get_sorted_keywords;
+    unless (grep { $_->{keyword} eq $keyword } @$keywords) {
+        $c->halt(404);
+    }
     $c->halt(404) unless $entry;
     $entry->{html} = $self->htmlify($c, $entry->{description});
     $entry->{stars} = $self->load_stars($entry->{keyword});
@@ -227,11 +227,10 @@ post '/keyword/:keyword' => [qw/set_name authenticate/] => sub {
     my $keyword = $c->args->{keyword} or $c->halt(400);
     $c->req->parameters->{delete} or $c->halt(400);
 
-    # ここ cahce から引ける
-    $c->halt(404) unless $self->dbh->select_row(qq[
-        SELECT * FROM entry
-        WHERE keyword = ?
-    ], $keyword);
+    my $keywords = $self->_get_sorted_keywords;
+    unless (grep { $_->{keyword} eq $keyword } @$keywords) {
+        $c->halt(404);
+    }
 
     $self->dbh->query(qq[
         DELETE FROM entry

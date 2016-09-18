@@ -23,7 +23,6 @@ BEGIN {
     if (0) {
         use Devel::KYTProf;
         Devel::KYTProf->add_prof(__PACKAGE__, '_get_sorted_keywords');
-        Devel::KYTProf->add_prof(__PACKAGE__, 'load_stars');
         Devel::KYTProf->add_prof(__PACKAGE__, 'htmlify');
         Devel::KYTProf->add_prof(__PACKAGE__, 'is_spam_contents');
         Devel::KYTProf->add_prof(__PACKAGE__, 'register');
@@ -153,7 +152,7 @@ get '/' => [qw/set_name/] => sub {
     }
     for my $entry (@entries) {
         $entry->{html}  = $self->htmlify($c, $entry->{keyword}, $entry->{description});
-        $entry->{stars} = $self->load_stars($entry->{keyword});
+        $entry->{stars} = $self->select_stars($entry->{id});
     }
 
     my %id2ent = map { $_->{id} => $_ } @$entries;
@@ -361,18 +360,6 @@ sub _get_sorted_keywords {
             ]);
         }
     );
-}
-
-sub load_stars {
-    my ($self, $keyword) = @_;
-    my $origin = config('isutar_origin');
-    my $url = URI->new("$origin/stars");
-    $url->query_form(keyword => $keyword);
-    my $ua = Furl->new;
-    my $res = $ua->get($url);
-    my $data = decode_json $res->content;
-
-    $data->{stars};
 }
 
 sub is_spam_contents {
